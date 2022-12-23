@@ -6,10 +6,13 @@ from .routers import auth, user
 from app.database import get_db
 from sqlalchemy.orm import Session
 
+# defines that app is for FastAPI
 app = FastAPI()
 
+# origins of which server can access the app
 origins = ["*"]
 
+# enable cors to add origins and allow certain methods/headers 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -18,9 +21,11 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+# adds routes to app
 app.include_router(auth.router)
 app.include_router(user.router)
 
+# path / would return hello world
 @app.get('/')
 def main(db:Session = Depends(get_db)):
     return {'message': 'hello world!'}
