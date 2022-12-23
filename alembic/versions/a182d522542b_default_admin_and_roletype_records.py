@@ -16,6 +16,7 @@ down_revision = 'c7277cac56a8'
 branch_labels = None
 depends_on = None
 
+# define tables in order to add to the database
 roletype_table = sa.table('roleTypes', 
     sa.column('id', sa.Integer), sa.column('role_type', sa.String))
 
@@ -26,12 +27,14 @@ user_table = table('users', sa.column('id', sa.Integer),
 
 
 def upgrade() -> None:
+    # add default role_types to database
     op.bulk_insert(roletype_table, 
         [
             {'role_type':'Admin'},
             {'role_type':'Staff'},
             {'role_type':'Student'}
         ])
+    # add default admin user to database
     op.bulk_insert(user_table, 
         [
             {'username':'admin', 'password':'$2b$12$0B9oxKYDFep.vFMIhbr37.b6uesi50W0Soy6ye5bNAAmCBQ9.Wjsi',
@@ -39,7 +42,7 @@ def upgrade() -> None:
         ])
     pass
 
-
+# removes created role_types and admin from database when run
 def downgrade() -> None:
     op.execute(
         roletype_table.delete().where(roletype_table.c.role_type == 'Admin')

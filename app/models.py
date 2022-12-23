@@ -21,6 +21,7 @@ class User(Base):
     password = Column(String,nullable=False)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
+    grade = Column(Integer)
     role_type_id = Column(Integer, ForeignKey("roleTypes.id", ondelete='SET NULL'))
     created_at = Column(TIMESTAMP(timezone = True), nullable = False, server_default=text('now()'))
     edited_at = Column(TIMESTAMP(timezone=True))
