@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
     password: str
     first_name: str
     last_name: str
+    grade: Optional[conint(ge=1,le=12)] = None
     role_type_id: Optional[conint(ge=1,le=3)] = None
 
 # creates schema for updating a user
@@ -17,6 +18,7 @@ class UserUpdate(BaseModel):
     username: str
     first_name: str
     last_name: str
+    grade: Optional[conint(ge=1,le=12)] = None
     role_type_id: Optional[conint(ge=1,le=3)] = None
 
 # for outputing user
@@ -26,6 +28,7 @@ class UserOut(BaseModel):
     first_name: str
     last_name: str
     created_at: datetime
+    grade: Optional[conint(ge=1,le=12)] = None
     edited_at: Optional[datetime] = None
     role_type_id: Optional[int] = None
     role_type: Optional[schemas.RoleType] = None
