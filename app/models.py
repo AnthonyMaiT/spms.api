@@ -48,3 +48,12 @@ class Quarter_Range(Base):
     quarter_id = Column(Integer, ForeignKey("quarters.id", ondelete='CASCADE'), nullable=False)
     # references quarter table above
     quarter = relationship("Quarter")
+
+# Events Table
+class Events(Base):
+    # sets table name to events
+    __tablename__ = 'events'
+    # columns inside the table
+    id = Column(Integer, nullable=False, primary_key= True)
+    name = Column(String, nullable = False, unique = True)
+    is_sport = Column(Boolean, nullable = False)
