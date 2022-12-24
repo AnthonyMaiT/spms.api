@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app import models
-from .routers import auth, user
+from .routers import auth, user, quarter
 
 from app.database import get_db
 from sqlalchemy.orm import Session
@@ -24,6 +24,7 @@ app.add_middleware(
 # adds routes to app
 app.include_router(auth.router)
 app.include_router(user.router)
+app.include_router(quarter.router)
 
 # path / would return hello world
 @app.get('/')

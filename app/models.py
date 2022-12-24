@@ -28,3 +28,23 @@ class User(Base):
 
     # references role (does not store in db)
     role_type = relationship("RoleType")
+
+# Quarters table
+class Quarter(Base):
+    # sets table name inside db
+    __tablename__ = 'quarters'
+    # columns inside the table
+    id = Column(Integer, primary_key = True, nullable=False)
+    quarter = Column(String, unique=True, nullable=False)
+
+# Quarter Range Table (defines how long a quarter is)
+class Quarter_Range(Base):
+    # sets table name to quarter-ranges
+    __tablename__ = 'quarter-ranges'
+    # columns inside the table
+    id = Column(Integer, primary_key = True, nullable= False)
+    start_range = Column(TIMESTAMP(timezone=True), nullable=False)
+    end_range = Column(TIMESTAMP(timezone=True), nullable=False)
+    quarter_id = Column(Integer, ForeignKey("quarters.id", ondelete='CASCADE'), nullable=False)
+    # references quarter table above
+    quarter = relationship("Quarter")

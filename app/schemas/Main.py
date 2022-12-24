@@ -9,6 +9,7 @@ from pydantic import BaseModel, EmailStr, conint
 class RoleType(BaseModel):
     id: int
     role_type: str
+    # used to output model
     class Config:
         orm_mode = True
 

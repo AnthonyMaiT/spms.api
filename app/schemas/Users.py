@@ -10,16 +10,16 @@ class UserCreate(BaseModel):
     password: str
     first_name: str
     last_name: str
-    grade: Optional[conint(ge=1,le=12)] = None
-    role_type_id: Optional[conint(ge=1,le=3)] = None
+    grade: Optional[conint(ge=1,le=12)] = None # only accepts int from 1 to 12 inclusive
+    role_type_id: Optional[conint(ge=1,le=3)] = None # only accepts int from 1 to 3 inclusive
 
 # creates schema for updating a user
 class UserUpdate(BaseModel):
     username: str
     first_name: str
     last_name: str
-    grade: Optional[conint(ge=1,le=12)] = None
-    role_type_id: Optional[conint(ge=1,le=3)] = None
+    grade: Optional[conint(ge=1,le=12)] = None # only accepts int from 1 to 12 inclusive
+    role_type_id: Optional[conint(ge=1,le=3)] = None # only accepts int from 1 to 3 inclusive
 
 # for outputing user
 class UserOut(BaseModel):
@@ -28,10 +28,11 @@ class UserOut(BaseModel):
     first_name: str
     last_name: str
     created_at: datetime
-    grade: Optional[conint(ge=1,le=12)] = None
+    grade: Optional[conint(ge=1,le=12)] = None # only accepts int from 1 to 3 inclusive
     edited_at: Optional[datetime] = None
-    role_type_id: Optional[int] = None
+    role_type_id: Optional[conint(ge=1,le=3)] = None # only accepts int from 1 to 3 inclusive
     role_type: Optional[schemas.RoleType] = None
+    # used to output model
     class Config:
         orm_mode = True
 
