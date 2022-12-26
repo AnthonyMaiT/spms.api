@@ -72,3 +72,12 @@ class StudentPoint(Base):
     user = relationship("User")
     quarter_range = relationship("Quarter_Range")
     event = relationship("Events")
+
+# Prizes table
+class Prize(Base):
+    # sets table name to prizes
+    __tablename__ = 'prizes'
+    # columns inside the table
+    id = Column(Integer, primary_key = True, nullable = False)
+    name = Column(String, nullable = False, unique= True)
+    level = Column(Integer, nullable = False)
