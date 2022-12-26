@@ -36,6 +36,17 @@ class UserOut(BaseModel):
     class Config:
         orm_mode = True
 
+# used to output user for created point
+class UserPointOut(BaseModel):
+    id: int
+    username: str
+    first_name: str
+    last_name: str
+    grade: Optional[conint(ge=1,le=12)] = None
+    # used to output model
+    class Config:
+        orm_mode = True
+
 # for logging in user
 class UserLogin(BaseModel):
     email: str

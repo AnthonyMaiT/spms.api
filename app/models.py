@@ -57,3 +57,18 @@ class Events(Base):
     id = Column(Integer, nullable=False, primary_key= True)
     name = Column(String, nullable = False, unique = True)
     is_sport = Column(Boolean, nullable = False)
+
+# Student Points Table
+class StudentPoint(Base):
+    # sets table name to student_points
+    __tablename__ = 'student_points'
+    # columns inside the table
+    id = Column(Integer, primary_key = True, nullable=False)
+    attended_at = Column(TIMESTAMP(timezone=True), nullable = False, server_default=text('now()'))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete='CASCADE'), nullable=False)
+    quarter_range_id = Column(Integer, ForeignKey("quarter-ranges.id", ondelete='CASCADE'), nullable = False)
+    event_id = Column(Integer, ForeignKey("events.id", ondelete='CASCADE'), nullable =False)
+    # references users, quarter_range, and events table above.
+    user = relationship("User")
+    quarter_range = relationship("Quarter_Range")
+    event = relationship("Events")
