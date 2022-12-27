@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app import models
-from .routers import auth, user, quarter, event, student_points, prize
+from .routers import auth, user, quarter, event, student_points, prize, winner
 
 from app.database import get_db
 from sqlalchemy.orm import Session
@@ -28,6 +28,7 @@ app.include_router(quarter.router)
 app.include_router(event.router)
 app.include_router(student_points.router)
 app.include_router(prize.router)
+app.include_router(winner.router)
 
 # path / would return hello world
 @app.get('/')

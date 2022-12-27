@@ -81,3 +81,18 @@ class Prize(Base):
     id = Column(Integer, primary_key = True, nullable = False)
     name = Column(String, nullable = False, unique= True)
     level = Column(Integer, nullable = False)
+
+# Student Winner table
+class StudentWinner(Base):
+    # sets table name to student_winners
+    __tablename__ = 'student_winners'
+    # columns inside the table
+    id = Column(Integer, primary_key = True, nullable=False)
+    top_points = Column(Boolean, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete='CASCADE'), nullable =False)
+    quarter_range_id = Column(Integer, ForeignKey("quarter-ranges.id", ondelete='CASCADE'), nullable=False)
+    prize_id = Column(Integer, ForeignKey("prizes.id", ondelete='SET NULL'), nullable=False)
+    # references other tables in db
+    user = relationship("User")
+    quarter_range = relationship("Quarter_Range")
+    prize = relationship("Prize")
