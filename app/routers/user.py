@@ -31,6 +31,11 @@ def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
     # returns error if no roles/ is student
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view users")
 
+# would return the current user to frontend and checks to see if logged in
+@router.get('/current', response_model=schemas.UserOut)
+def get_current_user(current_user: int = Depends(oauth2.get_current_user)):
+    return current_user
+
 # gets a certain user with id
 @router.get('/{id}', response_model=schemas.UserOut)
 def get_user(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):

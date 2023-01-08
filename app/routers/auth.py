@@ -14,7 +14,8 @@ router = APIRouter(tags=['Authentication'])
 @router.post('/login', response_model=schemas.Token)
 # oauth2 password  request form returns username and password and have to use form-data in postman
 # method would connect to db 
-def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
+# response to set data to cookie
+def login(response: Response, user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
     # gets user from db using username
     user = db.query(models.User).filter(models.User.username == user_credentials.username).first()
     # if username doesn't exist, return error
@@ -26,4 +27,13 @@ def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session =
     # create a token
     # return token to user
     access_token = oauth2.create_access_token(data = {"user_id": user.id, "role_type_id":user.role_type_id})
+    # sets data to cookie
+    response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
     return {"access_token": access_token, "token_type": "bearer"}
+
+# removes token from cookie to logout user
+@router.get('/logout', status_code=status.HTTP_204_NO_CONTENT)
+def logout(response: Response):
+    response.delete_cookie("access_token")
+    return {"response" : "logged out"}
+

@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 app = FastAPI()
 
 # origins of which server can access the app
-origins = ["*"]
+origins = ["http://localhost:4200"]
 
 # enable cors to add origins and allow certain methods/headers 
 app.add_middleware(
