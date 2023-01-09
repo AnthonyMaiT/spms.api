@@ -36,6 +36,13 @@ def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
 def get_current_user(current_user: int = Depends(oauth2.get_current_user)):
     return current_user
 
+# checks if user is admin for client side
+@router.get('/isadmin', response_model=bool)
+def is_admin(current_user: int = Depends(oauth2.get_current_user)):
+    if current_user.role_type_id != 1:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin")
+    return True
+
 # gets a certain user with id
 @router.get('/{id}', response_model=schemas.UserOut)
 def get_user(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
