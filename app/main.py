@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_pagination import add_pagination
 from app import models
 from .routers import auth, user, quarter, event, student_points, prize, winner
 
@@ -29,6 +30,9 @@ app.include_router(event.router)
 app.include_router(student_points.router)
 app.include_router(prize.router)
 app.include_router(winner.router)
+
+# adds pagination for datatables in angular
+add_pagination(app)
 
 # path / would return hello world
 @app.get('/')

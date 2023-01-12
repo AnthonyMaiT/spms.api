@@ -1,8 +1,12 @@
 from datetime import datetime
+from operator import or_
 from typing import List
 from fastapi import Body, Response, status, HTTPException, Depends, APIRouter
+from fastapi_pagination import Page, paginate
+from sqlalchemy import func, text
 from .. import models, utils, oauth2
 from ..schemas import Users as schemas
+from ..schemas import Main as schema
 from ..database import engine, get_db
 from sqlalchemy.orm import Session
 
@@ -15,19 +19,56 @@ router = APIRouter(
 )
 
 # get all users from the db
-# response_model returns a list of Users using model UserOut from schemas
-@router.get('/', response_model=List[schemas.UserOut])
+# response_model returns a list of Users using model UserOut from schemas with Paged data
+# Paged data includes total, page number, and page size
+@router.get('/', response_model=Page[schemas.UserOut])
 # connects to db
 # Authenticates user to see if login (would return 401 if no user)
-def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    # checks if current user is Admin and would return all users if so
+# http parameters in order to filter and sort data
+def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
+    usernameFilter: str = '', firstNameFilter: str='',lastNameFilter: str='',
+        gradeFilter: int = None, roleTypeIdFilter: int = None, sortColumn: str = 'id', sortDir: str = 'desc'):
+    # checks if current user is Admin
+    # returns users based on filters and page
     if current_user.role_type_id == 1:
-        users = db.query(models.User).all()
-        return users
-    # checks if current user is Staff and would return only Students if so
+        users_query = db.query(models.User).filter(
+            models.User.username.contains(usernameFilter), models.User.first_name.contains(
+                firstNameFilter), models.User.last_name.contains(lastNameFilter))
+        # as gradeFilter/roletype is an int, would need to pass it in if statement
+        if gradeFilter != None:
+            users_query = users_query.filter(models.User.grade == gradeFilter)
+        if roleTypeIdFilter != None:
+            users_query = users_query.filter(models.User.role_type_id == roleTypeIdFilter)
+        # sorts by column name and direction
+        users = users_query.order_by(text(sortColumn + ' ' + sortDir)).all()
+        return paginate(users)
+    # checks if current user is Staff
+    # returns users based on filters and page
     if current_user.role_type_id == 2:
-        users = db.query(models.User).where(models.User.role_type_id == 3).all()
-        return users
+        users_query = db.query(models.User).filter(models.User.role_type_id == 3,
+            models.User.username.contains(usernameFilter), models.User.first_name.contains(
+                firstNameFilter), models.User.last_name.contains(lastNameFilter))
+        # as gradeFilter/roletype is an int, would need to pass it in if statement
+        if gradeFilter != None:
+            users_query = users_query.filter(models.User.grade == gradeFilter)
+        if roleTypeIdFilter != None:
+            users_query = users_query.filter(models.User.role_type_id == roleTypeIdFilter)
+        # sorts by column name and direction
+        users = users_query.order_by(text(sortColumn + ' ' + sortDir)).all()
+        return paginate(users)
+    # returns error if no roles/ is student
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view users")
+
+# get all users from the db
+# response_model returns a list of Users using model RoleType from schemas
+@router.get('/role-types', response_model=List[schema.RoleType])
+# connects to db
+# Authenticates user to see if login (would return 401 if no user)
+def get_role_types(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    # checks if current user is Admin and would return all role types if so
+    if current_user.role_type_id == 1:
+        role_types = db.query(models.RoleType).all()
+        return role_types
     # returns error if no roles/ is student
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view users")
 
@@ -126,9 +167,6 @@ def update_user(id:int , updated_user: schemas.UserUpdate, db: Session = Depends
         if username_query:
             if username_query.id != id:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Username: {userdict['username']} already exists")
-        # checks if user being updated is a different admin and returns error if it is
-        if user.role_type_id == 1 and user.id != current_user.id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to update this user")
         # adds edited_at to db
         userdict["edited_at"] = datetime.now()
         # update user to db and returns updated user.
@@ -172,8 +210,8 @@ def delete_user(id:int, db: Session = Depends(get_db), current_user: int = Depen
         user = user_query.first()
         if user == None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} was not found")
-        # cannot delete admin and self
-        if user.role_type_id == 1 and current_user.id != user.id:
+        # cannot delete self
+        if current_user.id == user.id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to delete this user")
         # delete user in db then returns response
         user_query.delete(synchronize_session=False)
