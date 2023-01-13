@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 from fastapi import Body, Response, status, HTTPException, Depends, APIRouter
+from sqlalchemy import desc
 from .. import models, utils, oauth2
 from ..schemas import Quarters as schemas
 from ..database import engine, get_db
@@ -18,19 +19,16 @@ router = APIRouter(
 # connects to db
 # Authenticates user to see if login (would return 401 if no user)
 def get_quarters(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    # checks if current user is Admin and would return all users if so
-    if current_user.role_type_id == 1:
-        quarters = db.query(models.Quarter).all()
-        return quarters
-    # returns error if not admin
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view users")
+    # return quarters to user
+    quarters = db.query(models.Quarter).all()
+    return quarters
 
 # get the quarter ranges from db
 # response would have fields from QuarterRangeOut
 @router.get('/quarter-ranges', response_model=List[schemas.QuarterRangeOut])
 def get_quarter_ranges(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # retrieves data from db and returns it back to user
-    quarter_ranges = db.query(models.Quarter_Range).all()
+    quarter_ranges = db.query(models.Quarter_Range).order_by(desc(models.Quarter_Range.start_range)).all()
     return quarter_ranges
 
 # get a singular quarter range from db
@@ -58,12 +56,12 @@ def create_quarter_range(quarter_range: schemas.QuarterRange,
             quarter_range.start_range >= models.Quarter_Range.start_range, 
             quarter_range.start_range <= models.Quarter_Range.end_range).first()
         if test_start_date:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Start date conflicts with other quarters")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Start date conflicts with other quarter ranges")
         test_end_date = db.query(models.Quarter_Range).filter(
             quarter_range.end_range >= models.Quarter_Range.start_range, 
             quarter_range.end_range <= models.Quarter_Range.end_range).first()
         if test_end_date:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="End date conflicts with other quarters")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="End date conflicts with other quarter ranges")
         # add the quarter_range to db and return the created range back to user
         new_quarter = models.Quarter_Range(**quarter_range.dict())
         db.add(new_quarter)
@@ -93,12 +91,12 @@ def update_quarter_range(id: int, quarter_range: schemas.QuarterRange,
         quarter_range.start_range >= models.Quarter_Range.start_range, 
         quarter_range.start_range <= models.Quarter_Range.end_range).first()
     if test_start_date and test_start_date.id != id:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Start date conflicts with other quarters")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Start date conflicts with other quarter ranges")
     test_end_date = db.query(models.Quarter_Range).filter(
         quarter_range.end_range >= models.Quarter_Range.start_range, 
         quarter_range.end_range <= models.Quarter_Range.end_range).first()
     if test_end_date and test_end_date.id != id:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="End date conflicts with other quarters")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="End date conflicts with other quarter ranges")
     # updates and return the quarter_range
     quarter_range_query.update(quarter_range.dict(), synchronize_session=False)
     db.commit()
