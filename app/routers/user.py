@@ -42,21 +42,7 @@ def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
         # sorts by column name and direction
         users = users_query.order_by(text(sortColumn + ' ' + sortDir)).all()
         return paginate(users)
-    # checks if current user is Staff
-    # returns users based on filters and page
-    if current_user.role_type_id == 2:
-        users_query = db.query(models.User).filter(models.User.role_type_id == 3,
-            models.User.username.contains(usernameFilter), models.User.first_name.contains(
-                firstNameFilter), models.User.last_name.contains(lastNameFilter))
-        # as gradeFilter/roletype is an int, would need to pass it in if statement
-        if gradeFilter != None:
-            users_query = users_query.filter(models.User.grade == gradeFilter)
-        if roleTypeIdFilter != None:
-            users_query = users_query.filter(models.User.role_type_id == roleTypeIdFilter)
-        # sorts by column name and direction
-        users = users_query.order_by(text(sortColumn + ' ' + sortDir)).all()
-        return paginate(users)
-    # returns error if no roles/ is student
+    # returns error if no roles/ is student / is staff
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view users")
 
 # get all users from the db
@@ -84,6 +70,13 @@ def is_admin(current_user: int = Depends(oauth2.get_current_user)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin")
     return True
 
+# checks if user is admin/staff for client side
+@router.get('/isstaff', response_model=bool)
+def is_admin(current_user: int = Depends(oauth2.get_current_user)):
+    if current_user.role_type_id == 1 or current_user.role_type_id == 2:
+        return True
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin/staff")
+
 # gets a certain user with id
 @router.get('/{id}', response_model=schemas.UserOut)
 def get_user(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
@@ -92,14 +85,8 @@ def get_user(id: int, db: Session = Depends(get_db), current_user: int = Depends
     # checks if the user with id exist
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} does not exist")
-    # would return error if staff is not accessing a student user
-    if current_user.role_type_id == 2:
-        if user.role_type_id != 3:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view user")
-    # would return error if person isn't admin/staff
-    # would return error if person isn't accessing their own info
-    if not current_user.role_type_id == 1 and not current_user.role_type_id == 2 and (
-            not current_user.id == user.id):
+    # would return error if person isn't admin
+    if not current_user.role_type_id == 1:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view user")
     # returns user data
     return user
