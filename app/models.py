@@ -58,6 +58,18 @@ class Events(Base):
     name = Column(String, nullable = False, unique = True)
     is_sport = Column(Boolean, nullable = False)
 
+# Event time table
+class EventTime(Base):
+    # sets table name to event time
+    __tablename__ = 'event_times'
+    # columns inside the table
+    id = Column(Integer, nullable= False, primary_key=True)
+    start_time = Column(TIMESTAMP(timezone=True), nullable=False)
+    end_time = Column(TIMESTAMP(timezone=True), nullable=False)
+    event_id = Column(Integer, ForeignKey("events.id", ondelete='CASCADE'), nullable=False)
+    # references event table above
+    event = relationship("Events")
+
 # Student Points Table
 class StudentPoint(Base):
     # sets table name to student_points

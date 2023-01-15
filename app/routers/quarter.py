@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 from fastapi import Body, Response, status, HTTPException, Depends, APIRouter
+from fastapi_pagination import Page, paginate
 from sqlalchemy import desc
 from .. import models, utils, oauth2
 from ..schemas import Quarters as schemas
@@ -25,11 +26,11 @@ def get_quarters(db: Session = Depends(get_db), current_user: int = Depends(oaut
 
 # get the quarter ranges from db
 # response would have fields from QuarterRangeOut
-@router.get('/quarter-ranges', response_model=List[schemas.QuarterRangeOut])
+@router.get('/quarter-ranges', response_model=Page[schemas.QuarterRangeOut])
 def get_quarter_ranges(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # retrieves data from db and returns it back to user
     quarter_ranges = db.query(models.Quarter_Range).order_by(desc(models.Quarter_Range.start_range)).all()
-    return quarter_ranges
+    return paginate(quarter_ranges)
 
 # get a singular quarter range from db
 # response would have fields from QuarterRangeOut

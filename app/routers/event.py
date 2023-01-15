@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import List
 from fastapi import Body, Response, status, HTTPException, Depends, APIRouter
+from fastapi_pagination import Page, paginate
+from sqlalchemy import desc
 from .. import models, utils, oauth2
 from ..schemas import Events as schemas
 from ..database import engine, get_db
@@ -15,12 +17,13 @@ router = APIRouter(
 
 # get all events from the db
 # response schema is from Events
-@router.get('/', response_model=List[schemas.Events])
+@router.get('/', response_model=Page[schemas.Events])
 # gets db session and authenticate user is logged in
-def get_events(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def get_events(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), nameFilter: str = ''):
     # gets all events in db
-    events = db.query(models.Events).all()
-    return events
+    events = db.query(models.Events).filter(models.Events.name.contains(nameFilter)).order_by(
+        desc(models.Events.id)).all()
+    return paginate(events)
 
 # get singular event from db with id
 # response schema is from Events
