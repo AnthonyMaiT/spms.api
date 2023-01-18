@@ -58,6 +58,16 @@ def get_role_types(db: Session = Depends(get_db), current_user: int = Depends(oa
     # returns error if no roles/ is student
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view users")
 
+# would find a user with a certain username
+@router.get('/find', response_model=schemas.UserPointOut)
+def find_user(username: str = '', db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    user = db.query(models.User).filter(models.User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Username not found")
+    if user.role_type_id != 3:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot get user with that name")
+    return user
+
 # would return the current user to frontend and checks to see if logged in
 @router.get('/current', response_model=schemas.UserOut)
 def get_current_user(current_user: int = Depends(oauth2.get_current_user)):

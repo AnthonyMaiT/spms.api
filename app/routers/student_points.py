@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import List
 from fastapi import Body, Response, status, HTTPException, Depends, APIRouter
+from fastapi_pagination import Page, paginate
+from sqlalchemy import desc
 from .. import models, utils, oauth2
 from ..schemas import StudentPoints as schemas
 from ..database import engine, get_db
@@ -16,16 +18,29 @@ router = APIRouter(
 # get only points from student user of user
 # get all student points from the db or admin/staff
 # response schema is from Student Points
-@router.get('/', response_model=List[schemas.StudentPointsOut])
+# repsonse would be paged for pagination
+@router.get('/', response_model=Page[schemas.StudentPointsOut])
 # gets db session and authenticate user is logged in
-def get_points(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def get_points(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), student_id: str = '', event_time_id: str = '', quarter_range_id: str = ''):
     # gets event of student for student
     if current_user.role_type_id == 3:
-        student_points = db.query(models.StudentPoint).filter(models.StudentPoint.user_id == current_user.id).all()
-        return student_points
+        student_points = db.query(models.StudentPoint).filter(models.StudentPoint.user_id == current_user.id)
+        # filters for event and quarter 
+        if event_time_id.isdigit():
+            points = points.filter(models.StudentPoint.event_time_id == int(event_time_id))
+        if quarter_range_id.isdigit():
+            points = points.filter(models.EventTime.quarter_range_id == int(quarter_range_id))
+        return paginate(student_points.all())
     # gets all events in db for admin/staff
-    points = db.query(models.StudentPoint).all()
-    return points
+    points = db.query(models.StudentPoint).join(models.EventTime, models.EventTime.id == models.StudentPoint.event_time_id).order_by(desc(models.StudentPoint.id))
+    # filters for event, user, and quarter
+    if student_id.isdigit():
+        points = points.filter(models.StudentPoint.user_id == int(student_id))
+    if event_time_id.isdigit():
+        points = points.filter(models.StudentPoint.event_time_id == int(event_time_id))
+    if quarter_range_id.isdigit():
+        points = points.filter(models.EventTime.quarter_range_id == int(quarter_range_id))
+    return paginate(points.all())
 
 # get only point from student user of user
 # get any student point from the db for admin/staff
@@ -40,39 +55,26 @@ def get_point(id: int, db: Session = Depends(get_db), current_user: int = Depend
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to get this point")
     return point_query
 
-# add point to db
+# add a point to the db with student id and event time id
 @router.post('/',status_code=status.HTTP_201_CREATED, response_model=schemas.StudentPointsOut)
-def add_point(point: schemas.StudentPoints, 
+def add_point(point: schemas.StudentPoint,
     db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    # checks if not admin/staff
-    if current_user.role_type_id != 1 and current_user.role_type_id != 2:
+    # checks if not admin
+    if current_user.role_type_id != 1:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to add points")
-
-    # checks if username is valid
-    user = db.query(models.User).filter(models.User.username == point.username).first()
+    # checks if user id is valid
+    user = db.query(models.User).filter(models.User.id == point.user_id).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find username in db")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find user id in db")
+    # checks if point already exist
+    find_point = db.query(models.StudentPoint).filter(models.StudentPoint.event_time_id == point.event_time_id, 
+        models.StudentPoint.user_id == user.id).first()
+    if find_point:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Student already attended event")
     # checks if student
     if user.role_type_id != 3:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Only students can have points")
-
-    # check if event id exists
-    event = db.query(models.Events).filter(models.Events.id == point.event_id).first()
-    if not event:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id: {point.event_id} does not exist")
-    
-    # check if attended time fits in quarter
-    attended_time = datetime.now()
-    quarter_range = db.query(models.Quarter_Range).filter(attended_time >= models.Quarter_Range.start_range, 
-        attended_time <= models.Quarter_Range.end_range).first()
-    if not quarter_range:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find quarter range in db")
-    
-    # create db to add point
-    new_point = {"user_id": user.id, "quarter_range_id": quarter_range.id, "event_id": point.event_id,
-        "attended_at": attended_time}
-    # add point and return created point
-    created_point = models.StudentPoint(**new_point)
+    created_point = models.StudentPoint(**point.dict())
     db.add(created_point)
     db.commit()
     db.refresh(created_point)
@@ -98,17 +100,16 @@ def edit_point(id: int, point: schemas.EditPoint,
     if user.role_type_id != 3:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Only students can have points")
     
-    # check if event id exists
-    event = db.query(models.Events).filter(models.Events.id == point.event_id).first()
-    if not event:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id: {point.event_id} does not exist")
-    
-    # check if attended time fits in quarter
-    quarter_range = db.query(models.Quarter_Range).filter(point.attended_at >= models.Quarter_Range.start_range, 
-        point.attended_at <= models.Quarter_Range.end_range).first()
-    if not quarter_range:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find quarter range in db")
-
+    # check if event time id exists
+    event_time = db.query(models.EventTime).filter(models.EventTime.id == point.event_time_id).first()
+    if not event_time:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Event Time with id: {point.event_time_id} does not exist")
+    # checks if point already exist
+    find_point = db.query(models.StudentPoint).filter(models.StudentPoint.event_time_id == point.event_time_id, 
+        models.StudentPoint.user_id == user.id).first()
+    if find_point:
+        if find_point.id == id:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Student already attended event")
     point_query.update(point.dict(),synchronize_session=False)
     db.commit()
     return point_query.first()

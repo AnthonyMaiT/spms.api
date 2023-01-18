@@ -67,8 +67,11 @@ class EventTime(Base):
     start_time = Column(TIMESTAMP(timezone=True), nullable=False)
     end_time = Column(TIMESTAMP(timezone=True), nullable=False)
     event_id = Column(Integer, ForeignKey("events.id", ondelete='CASCADE'), nullable=False)
+    quarter_range_id = Column(Integer, ForeignKey("quarter-ranges.id", ondelete='CASCADE'), nullable=False)
     # references event table above
     event = relationship("Events")
+    # references quarter range table above
+    quarter_range = relationship("Quarter_Range")
 
 # Student Points Table
 class StudentPoint(Base):
@@ -76,14 +79,11 @@ class StudentPoint(Base):
     __tablename__ = 'student_points'
     # columns inside the table
     id = Column(Integer, primary_key = True, nullable=False)
-    attended_at = Column(TIMESTAMP(timezone=True), nullable = False, server_default=text('now()'))
     user_id = Column(Integer, ForeignKey("users.id", ondelete='CASCADE'), nullable=False)
-    quarter_range_id = Column(Integer, ForeignKey("quarter-ranges.id", ondelete='CASCADE'), nullable = False)
-    event_id = Column(Integer, ForeignKey("events.id", ondelete='CASCADE'), nullable =False)
-    # references users, quarter_range, and events table above.
+    event_time_id = Column(Integer, ForeignKey("event_times.id", ondelete='CASCADE'), nullable =False)
+    # references users, and events table above.
     user = relationship("User")
-    quarter_range = relationship("Quarter_Range")
-    event = relationship("Events")
+    event_time= relationship("EventTime")
 
 # Prizes table
 class Prize(Base):

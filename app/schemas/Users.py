@@ -4,6 +4,10 @@ from pydantic import BaseModel, conint
 
 from app.schemas import Main as schemas
 
+# for getting a username from user
+class Username(BaseModel):
+    username:str
+
 # creates schema for creating a user
 class UserCreate(BaseModel):
     username: str

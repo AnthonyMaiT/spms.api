@@ -1,6 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel
 
+from app.schemas.Quarters import QuarterRangeOut
+
 # schema for creating an event
 class CreateEvent(BaseModel):
     name: str
@@ -24,6 +26,8 @@ class CreateEventTime(BaseModel):
 class EventTimes(CreateEventTime):
     id: int
     event: Events
+    quarter_range_id: int
+    quarter_range: QuarterRangeOut
     # to return schema to user
     class Config: 
         orm_mode=True
