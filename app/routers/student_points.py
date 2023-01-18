@@ -24,12 +24,12 @@ router = APIRouter(
 def get_points(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), student_id: str = '', event_time_id: str = '', quarter_range_id: str = ''):
     # gets event of student for student
     if current_user.role_type_id == 3:
-        student_points = db.query(models.StudentPoint).filter(models.StudentPoint.user_id == current_user.id)
+        student_points = db.query(models.StudentPoint).join(models.EventTime, models.EventTime.id == models.StudentPoint.event_time_id).order_by(desc(models.StudentPoint.id)).filter(models.StudentPoint.user_id == current_user.id)
         # filters for event and quarter 
         if event_time_id.isdigit():
-            points = points.filter(models.StudentPoint.event_time_id == int(event_time_id))
+            student_points = student_points.filter(models.StudentPoint.event_time_id == int(event_time_id))
         if quarter_range_id.isdigit():
-            points = points.filter(models.EventTime.quarter_range_id == int(quarter_range_id))
+            student_points = student_points.filter(models.EventTime.quarter_range_id == int(quarter_range_id))
         return paginate(student_points.all())
     # gets all events in db for admin/staff
     points = db.query(models.StudentPoint).join(models.EventTime, models.EventTime.id == models.StudentPoint.event_time_id).order_by(desc(models.StudentPoint.id))
