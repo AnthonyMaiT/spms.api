@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 from fastapi import Body, Response, status, HTTPException, Depends, APIRouter
+from fastapi_pagination import Page, paginate
 from .. import models, utils, oauth2
 from ..schemas import Prizes as schemas
 from ..database import engine, get_db
@@ -15,12 +16,12 @@ router = APIRouter(
 
 # get all prizes from db
 # response schema is a list of Prizes
-@router.get('/', response_model=List[schemas.Prize])
+@router.get('/', response_model=Page[schemas.Prize])
 # get db session and authenticates user login
-def get_prizes(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-     # gets all prizes from db
-     prizes = db.query(models.Prize).all()
-     return prizes
+def get_prizes(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), name: str = ''):
+     # gets all prizes from db with name filter
+     prizes = db.query(models.Prize).filter(models.Prize.name.contains(name)).all()
+     return paginate(prizes)
     
 # gets a singular prize from db
 # response schema is Prize
