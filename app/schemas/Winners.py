@@ -18,6 +18,7 @@ class StudentWinner(BaseModel):
     id: int
     top_points: bool
     user_id: int
+    points: int
     user: UserPointOut
     quarter_range_id: int
     quarter_range: QuarterRangeOut

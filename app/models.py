@@ -101,6 +101,7 @@ class StudentWinner(Base):
     # columns inside the table
     id = Column(Integer, primary_key = True, nullable=False)
     top_points = Column(Boolean, nullable=False)
+    points = Column(Integer, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id", ondelete='CASCADE'), nullable =False)
     quarter_range_id = Column(Integer, ForeignKey("quarter-ranges.id", ondelete='CASCADE'), nullable=False)
     prize_id = Column(Integer, ForeignKey("prizes.id", ondelete='SET NULL'), nullable=False)

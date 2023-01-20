@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 from fastapi import Body, Response, status, HTTPException, Depends, APIRouter
+from fastapi_pagination import Page, paginate
 from sqlalchemy import func, text
 from .. import models, utils, oauth2
 from ..schemas import Winners as schemas
@@ -16,12 +17,17 @@ router = APIRouter(
 
 # get all winners from db
 # response schema is a list of StudentWinners
-@router.get('/', response_model=List[schemas.StudentWinner])
+@router.get('/', response_model=Page[schemas.StudentWinner])
 # get db session and authenticate user login
-def get_winners(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def get_winners(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), student_id: str = '', quarter_range_id: str = ''):
     # returns winners
-    winners = db.query(models.StudentWinner).all()
-    return winners
+    winners = db.query(models.StudentWinner)
+    # filters based on user id and winner id
+    if student_id.isdigit():
+        winners = winners.filter(models.StudentWinner.user_id == int(student_id))
+    if quarter_range_id.isdigit():
+        winners = winners.filter(models.StudentWinner.quarter_range_id == int(quarter_range_id))
+    return paginate(winners.all())
 
 # get a single winner from db
 # response schema is of StudentWinner
@@ -48,10 +54,10 @@ def create_winners(quarter: schemas.CreateWinner, db: Session = Depends(get_db),
     # checks if already top winner
     check_top_winner = db.query(models.StudentWinner).filter(quarter.quarter_range_id == models.StudentWinner.quarter_range_id, models.StudentWinner.top_points == True).first()
     if not check_top_winner:
-        # get top winner
+        # get top winner based on the quarter
         winner_query = db.query(models.User, func.count(models.StudentPoint.user_id).label("points")).join(
-            models.StudentPoint, models.StudentPoint.user_id == models.User.id, isouter=True).filter(
-                models.StudentPoint.quarter_range_id == quarter.quarter_range_id).group_by(
+            models.StudentPoint, models.StudentPoint.user_id == models.User.id, isouter=True).join(models.EventTime, models.StudentPoint.event_time_id == models.EventTime.id).filter(
+                models.EventTime.quarter_range_id == quarter.quarter_range_id).group_by(
                 models.User.id).order_by(text("points DESC")).first()
         if winner_query:
             level = return_prize_level(winner_query.points)
@@ -62,7 +68,7 @@ def create_winners(quarter: schemas.CreateWinner, db: Session = Depends(get_db),
             if not prize:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Prize with level: {level} was not found")
             # add top winner to db
-            top_winner_dict = {"user_id": winner_query.User.id, "quarter_range_id":quarter.quarter_range_id, "prize_id":prize.id, "top_points":True}
+            top_winner_dict = {"user_id": winner_query.User.id, "quarter_range_id":quarter.quarter_range_id, "prize_id":prize.id, "top_points":True, "points": winner_query.points}
             winner = models.StudentWinner(**top_winner_dict)
             db.add(winner)
             db.commit()
@@ -76,10 +82,10 @@ def create_winners(quarter: schemas.CreateWinner, db: Session = Depends(get_db),
             models.User.grade == grade).first()
         if check_winner:
             continue
-        # gets a random winner then add to db
+        # gets a random winner based on the quarter then add to db
         grade_winner = db.query(models.User, func.count(models.StudentPoint.user_id).label("points")).join(
-            models.User, models.StudentPoint.user_id == models.User.id, isouter=True).filter(
-                models.StudentPoint.quarter_range_id == quarter.quarter_range_id, models.User.grade == grade).group_by(
+            models.User, models.StudentPoint.user_id == models.User.id, isouter=True).join(models.EventTime, models.StudentPoint.event_time_id == models.EventTime.id).filter(
+                models.EventTime.quarter_range_id == quarter.quarter_range_id, models.User.grade == grade).group_by(
                 models.User.id).order_by(text("RANDOM()")).first()
         # checks if ANY winner exists
         if grade_winner:
@@ -91,7 +97,7 @@ def create_winners(quarter: schemas.CreateWinner, db: Session = Depends(get_db),
             if not prize:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Prize with level: {level} was not found")
             # add grade quarter winner to db
-            quarter_winner = {"user_id": grade_winner.User.id, "quarter_range_id":quarter.quarter_range_id, "prize_id":prize.id, "top_points":False}
+            quarter_winner = {"user_id": grade_winner.User.id, "quarter_range_id":quarter.quarter_range_id, "prize_id":prize.id, "top_points":False, "points": grade_winner.points}
             winner = models.StudentWinner(**quarter_winner)
             db.add(winner)
             db.commit()
