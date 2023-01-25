@@ -29,6 +29,9 @@ def get_quarters(db: Session = Depends(get_db), current_user: int = Depends(oaut
 def get_current_quarter(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     current_time = datetime.now()
     current_quarter = db.query(models.Quarter_Range).filter(models.Quarter_Range.end_range > current_time, models.Quarter_Range.start_range < current_time).first()
+    # returns exception of no quarter is set
+    if not current_quarter:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No quarter set for today")
     return current_quarter
 
 # get the quarter ranges from db

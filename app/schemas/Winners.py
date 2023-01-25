@@ -26,3 +26,10 @@ class StudentWinner(BaseModel):
     prize: Prize
     class Config:
         orm_mode=True
+
+# used to return points of users
+class Points(BaseModel):
+    User: UserPointOut
+    points: int
+    class Conifg:
+        orm_mode=True
