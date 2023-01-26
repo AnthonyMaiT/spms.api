@@ -8,6 +8,7 @@ Create Date: 2022-12-22 19:38:58.994527
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import table, column
+from app.utils import hash
 
 
 # revision identifiers, used by Alembic.
@@ -25,6 +26,8 @@ user_table = table('users', sa.column('id', sa.Integer),
     column('role_type_id',sa.Integer), column('first_name', sa.String),
     column('last_name', sa.String))
 
+# add password hash no matter the secret key
+password = hash('123qwe')
 
 def upgrade() -> None:
     # add default role_types to database
@@ -37,7 +40,7 @@ def upgrade() -> None:
     # add default admin user to database
     op.bulk_insert(user_table, 
         [
-            {'username':'admin', 'password':'$2b$12$0B9oxKYDFep.vFMIhbr37.b6uesi50W0Soy6ye5bNAAmCBQ9.Wjsi',
+            {'username':'admin', 'password':password,
                 'role_type_id':1, 'first_name':'Admin', 'last_name':''}
         ])
     pass

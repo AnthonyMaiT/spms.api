@@ -41,41 +41,31 @@ def get_past_quarter_range(db: Session = Depends(get_db), current_user: int = De
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No past quarters found")
     return previous_quarter
 
-# gets all the user points accumulated together and return a paginated leaderboard
-@router.get('/current-leaderboards', response_model=Page[schemas.Points])
-def get_current_leaderboard(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    current_date = datetime.now()
-    current_quarter_range = db.query(models.Quarter_Range).filter(
-        models.Quarter_Range.start_range < current_date, 
-        models.Quarter_Range.end_range > current_date
-    ).first()
-    if not current_quarter_range:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No quarter range for today's date")
-    user_points = db.query(models.User, func.count(models.StudentPoint.user_id).label("points")).join(
-        models.StudentPoint, models.StudentPoint.user_id == models.User.id , isouter= True
-    ).join(models.EventTime, models.EventTime.id == models.StudentPoint.event_time_id).filter(
-        models.EventTime.quarter_range_id == current_quarter_range.id
-    ).group_by(models.User.id).order_by(text("points DESC")).all()
-    return paginate(user_points)
+# gets all the user points accumulated together and return a paginated leaderboard if there are any
+# all depends on the quarter range id
+@router.get('/leaderboards', response_model=Page[schemas.Points])
+def get_current_leaderboard(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), quarter_range_id: str = ''):
+    if quarter_range_id.isdigit():
+        user_points = db.query(models.User, func.count(models.StudentPoint.user_id).label("points")).join(
+            models.StudentPoint, models.StudentPoint.user_id == models.User.id , isouter= True
+            ).join(models.EventTime, models.EventTime.id == models.StudentPoint.event_time_id).filter(
+            models.EventTime.quarter_range_id == int(quarter_range_id)
+        ).group_by(models.User.id).order_by(text("points DESC")).all()
+        return paginate(user_points)
+    return paginate([])
 
-# gets the current points of the user
-@router.get('/current-points', response_model=schemas.Points)
-def get_current_user_points(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+# gets the current points of the user for the quarter range
+@router.get('/user-points', response_model=schemas.Points)
+def get_current_user_points(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), quarter_range_id: str = ''):
     if current_user.role_type_id != 3:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No points for current user")
-    current_date = datetime.now()
-    current_quarter_range = db.query(models.Quarter_Range).filter(
-        models.Quarter_Range.start_range < current_date, 
-        models.Quarter_Range.end_range > current_date
-    ).first()
-    # checks if any point exists for the user
-    if not current_quarter_range:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No quarter range for today's date")
-    user_points = db.query(models.User, func.count(models.StudentPoint.id).label("points")).join(
-        models.StudentPoint, models.StudentPoint.user_id == models.User.id , isouter= True
-    ).join(models.EventTime, models.EventTime.id == models.StudentPoint.event_time_id, isouter=True).filter(
-        models.EventTime.quarter_range_id == current_quarter_range.id, models.User.id == current_user.id
-    ).group_by(models.User.id).first()
-    if not user_points:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No student points found for user")
-    return user_points
+    if (quarter_range_id.isdigit()):
+        user_points = db.query(models.User, func.count(models.StudentPoint.id).label("points")).join(
+            models.StudentPoint, models.StudentPoint.user_id == models.User.id , isouter= True
+        ).join(models.EventTime, models.EventTime.id == models.StudentPoint.event_time_id, isouter=True).filter(
+            models.EventTime.quarter_range_id == quarter_range_id, models.User.id == current_user.id
+        ).group_by(models.User.id).first()
+        if not user_points:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No student points found for user")
+        return user_points
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="quarter range id not found")

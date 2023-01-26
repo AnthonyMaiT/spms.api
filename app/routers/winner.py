@@ -79,7 +79,7 @@ def create_winners(quarter: schemas.CreateWinner, db: Session = Depends(get_db),
         # checks if grade winner exists for quarter
         check_winner = db.query(models.StudentWinner).join(models.User, models.User.id == models.StudentWinner.user_id, isouter=True).filter(
             models.StudentWinner.quarter_range_id == quarter.quarter_range_id,
-            models.User.grade == grade).first()
+            models.User.grade == grade, models.StudentWinner.top_points == False).first()
         if check_winner:
             continue
         # gets a random winner based on the quarter then add to db
