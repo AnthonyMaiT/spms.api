@@ -39,6 +39,8 @@ Now you can run the following command to start the app:
 `uvicorn app.main:app --reload`
 The app would run at http://localhost:8000
 
+API Documentation is at http://localhost:8000/docs
+
 ## Setting up the Frontend
 SPMS.ui was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.10.
 
@@ -51,6 +53,8 @@ In both environment files (One for development and one for production), you can 
 #### Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+Default Admin Username: admin
+Default Admin Password: 123qwe
 
 #### Code scaffolding
 
