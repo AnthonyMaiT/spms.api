@@ -35,8 +35,3 @@ app.include_router(leaderboard.router)
 
 # adds pagination for datatables in angular
 add_pagination(app)
-
-# path / would return hello world
-@app.get('/')
-def main(db:Session = Depends(get_db)):
-    return {'message': 'hello world!'}

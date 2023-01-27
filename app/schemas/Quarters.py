@@ -12,13 +12,13 @@ class Quarter(BaseModel):
     class Config:
         orm_mode = True
 # Quarter Range schema for put/post method
-class QuarterRange(BaseModel):
+class CreateUpdateQuarterRange(BaseModel):
     start_range: datetime
     end_range: datetime
     quarter_id: conint(le=4, ge=1) # only accepts an int from 1 to 4 inclusive
 
 # Quarter Range schema referencing the above schema for user output
-class QuarterRangeOut(QuarterRange):
+class QuarterRangeOut(CreateUpdateQuarterRange):
     id: int
     quarter: Quarter
     # used to output model

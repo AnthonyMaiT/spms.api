@@ -9,31 +9,35 @@ from .. import database, models, utils, oauth2
 # tags for documentation
 router = APIRouter(tags=['Authentication'])
 
+# description for route
+login_description = "To authenticate a user's credential for app. Requires username and password of type string and would set http cookie"
 # to login a certain user at /login
-# response_model would return Token and type of token
-@router.post('/login', response_model=schemas.Token)
-# oauth2 password  request form returns username and password and have to use form-data in postman
+# response_model would return a Token schema
+# passes in description to route
+@router.post('/login', response_model=schemas.Token, description=login_description)
+# response to set token to cookie
+# oauth2 username and password request form
 # method would connect to db 
-# response to set data to cookie
 def login(response: Response, user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
-    # gets user from db using username
+    # checks if username exists in db and returns exception if don't
     user = db.query(models.User).filter(models.User.username == user_credentials.username).first()
-    # if username doesn't exist, return error
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials")
     # if password from db doesn't match the password entered by user, return error
     if not utils.verify(user_credentials.password, user.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials")
     # create a token
-    # return token to user
     access_token = oauth2.create_access_token(data = {"user_id": user.id, "role_type_id":user.role_type_id})
-    # sets data to cookie
+    # sets token to http cookie
     response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
+    # return the access token to user
     return {"access_token": access_token, "token_type": "bearer"}
 
 # removes token from cookie to logout user
-@router.get('/logout', status_code=status.HTTP_204_NO_CONTENT)
+logout_description = "Removes token from cookie to logout user"
+@router.get('/logout', status_code=status.HTTP_204_NO_CONTENT, description=logout_description)
 def logout(response: Response):
+    # deletes cookie from response
     response.delete_cookie("access_token")
     return {"response" : "logged out"}
 

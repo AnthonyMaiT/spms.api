@@ -18,14 +18,16 @@ router = APIRouter(
     tags=['Users']
 )
 
+# description of get users
+get_users_description = "Get all of the users from database"
 # get all users from the db
 # response_model returns a list of Users using model UserOut from schemas with Paged data
 # Paged data includes total, page number, and page size
-@router.get('/', response_model=Page[schemas.UserOut])
+@router.get('/', response_model=Page[schemas.UserOut], description=get_users_description)
 # connects to db
 # Authenticates user to see if login (would return 401 if no user)
 # http parameters in order to filter and sort data
-def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
+def get_users(db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user),
     usernameFilter: str = '', firstNameFilter: str='',lastNameFilter: str='',
         gradeFilter: int = None, roleTypeIdFilter: int = None, sortColumn: str = 'id', sortDir: str = 'desc'):
     # checks if current user is Admin
@@ -45,12 +47,14 @@ def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
     # returns error if no roles/ is student / is staff
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view users")
 
+# description of get role types
+get_role_types_description = "Get all of the role types from database"
 # get all users from the db
 # response_model returns a list of Users using model RoleType from schemas
-@router.get('/role-types', response_model=List[schema.RoleType])
+@router.get('/role-types', response_model=List[schema.RoleType], description=get_role_types_description)
 # connects to db
 # Authenticates user to see if login (would return 401 if no user)
-def get_role_types(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def get_role_types(db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
     # checks if current user is Admin and would return all role types if so
     if current_user.role_type_id == 1:
         role_types = db.query(models.RoleType).all()
@@ -58,9 +62,11 @@ def get_role_types(db: Session = Depends(get_db), current_user: int = Depends(oa
     # returns error if no roles/ is student
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view users")
 
-# would find a user with a certain username
-@router.get('/find', response_model=schemas.UserPointOut)
-def find_user(username: str = '', db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+# description of find user
+get_find_user_description = "Find a user based on their username"
+# would find a user with a certain username for passing in point
+@router.get('/find', response_model=schemas.UserPointOut, description=get_find_user_description)
+def find_user(username: str = '', db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
     user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Username not found")
@@ -68,43 +74,37 @@ def find_user(username: str = '', db: Session = Depends(get_db), current_user: i
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot get user with that name")
     return user
 
+# description of get current user
+get_current_user_description = "Gets the current logged in user"
 # would return the current user to frontend and checks to see if logged in
-@router.get('/current', response_model=schemas.UserOut)
-def get_current_user(current_user: int = Depends(oauth2.get_current_user)):
+@router.get('/current', response_model=schemas.UserOut, description=get_current_user_description)
+def get_current_user(current_user = Depends(oauth2.get_current_user)):
     return current_user
 
-# checks if user is admin for client side
-@router.get('/isadmin', response_model=bool)
-def is_admin(current_user: int = Depends(oauth2.get_current_user)):
+# description of isadmin
+is_admin_description = "Checks if the current user is an admin"
+# checks if the current user is an admin for client side
+@router.get('/isadmin', response_model=bool, description=is_admin_description)
+def is_admin(current_user = Depends(oauth2.get_current_user)):
     if current_user.role_type_id != 1:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin")
     return True
 
-# checks if user is admin/staff for client side
+# description of isstaff
+is_staff_description = "Checks if the current user is an admin or staff"
+# checks if the current user is admin/staff for client side
 @router.get('/isstaff', response_model=bool)
-def is_admin(current_user: int = Depends(oauth2.get_current_user)):
+def is_admin(current_user = Depends(oauth2.get_current_user)):
     if current_user.role_type_id == 1 or current_user.role_type_id == 2:
         return True
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin/staff")
 
-# gets a certain user with id
-@router.get('/{id}', response_model=schemas.UserOut)
-def get_user(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    # gets the first user with the id from url
-    user = db.query(models.User).filter(models.User.id == id).first()
-    # checks if the user with id exist
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} does not exist")
-    # would return error if person isn't admin
-    if not current_user.role_type_id == 1:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view user")
-    # returns user data
-    return user
-
+# description of create user
+create_user_description = "Create a user which is added to db"
 # status code 201 when successfully creating a user
-@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
+@router.post('/', status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut, description=create_user_description)
 # user can only put in fields from UserCreate schema
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
     # checks if admin role in current user
     if current_user.role_type_id == 1:
         # checks if username exist. returns error if it already does exist
@@ -123,12 +123,13 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db), current
     # returns error if not admin
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to create user")
 
-
+# description of change password
+change_password_description = "Change password the current user"
 # when user changes OWN password
-@router.put('/change-password', response_model=schemas.UserOut)
+@router.put('/change-password', response_model=schemas.UserOut, description=change_password_description)
 # uses ChangePassword schema 
 def change_password(updated_password: schemas.ChangePassword, db: Session = Depends(
-        get_db), current_user: int = Depends(oauth2.get_current_user)):
+        get_db), current_user = Depends(oauth2.get_current_user)):
     # checks if the current_password matches does not match with the password in db. would return error
     if not utils.verify(updated_password.current_password, current_user.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credential")
@@ -146,11 +147,13 @@ def change_password(updated_password: schemas.ChangePassword, db: Session = Depe
     db.commit()
     return user_query.first()
 
+# description of update user
+update_user_description = "Update a user in the db"
 # updates user
-@router.put('/{id}', response_model=schemas.UserOut)
+@router.put('/{id}', response_model=schemas.UserOut, description=update_user_description)
 # user can only use fields defined by UserUpdate schema
 def update_user(id:int , updated_user: schemas.UserUpdate, db: Session = Depends(
-        get_db), current_user: int = Depends(oauth2.get_current_user)):
+        get_db), current_user = Depends(oauth2.get_current_user)):
     # checks if admin
     if current_user.role_type_id == 1:
         # gets user if exist. return error if doesn't
@@ -173,10 +176,12 @@ def update_user(id:int , updated_user: schemas.UserUpdate, db: Session = Depends
     # returns exception if user is not admin
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update users")
 
+# description of reset password
+reset_password_description = "Resets a user's password in the db"
 # reset password of any user
-@router.put('/reset-password/{id}', response_model=schemas.UserOut)
+@router.put('/reset-password/{id}', response_model=schemas.UserOut, description=reset_password_description)
 def reset_password(id:int, updated_password: schemas.ResetPassword, db: Session = Depends(
-        get_db), current_user: int = Depends(oauth2.get_current_user)):
+        get_db), current_user = Depends(oauth2.get_current_user)):
     # checks if admin
     if current_user.role_type_id == 1:
         # get user with id and if exist. returns error if doesn't
@@ -197,9 +202,11 @@ def reset_password(id:int, updated_password: schemas.ResetPassword, db: Session 
     # returns error if not admin
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update users")
 
+# description of delete user 
+delete_user_description = "Delete a user in the db"
 # delete a certain user. returns code 204 when completed
-@router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(id:int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+@router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT, description=delete_user_description)
+def delete_user(id:int, db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
     # checks if admin
     if current_user.role_type_id == 1:
         # get user from db with user. if doesn't exit return error
