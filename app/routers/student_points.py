@@ -1,12 +1,15 @@
 from datetime import datetime
 from typing import List
 from fastapi import Body, Response, status, HTTPException, Depends, APIRouter
+from fastapi.responses import StreamingResponse
 from fastapi_pagination import Page, paginate
-from sqlalchemy import desc
+from sqlalchemy import asc, desc, func, text
 from .. import models, utils, oauth2
 from ..schemas import StudentPoints as schemas
 from ..database import engine, get_db
 from sqlalchemy.orm import Session
+import pandas as pd
+import io
 
 # app would use this router to route methods
 # prefix for routes in file
@@ -146,4 +149,98 @@ def delete_point(id: int, db: Session = Depends(get_db), current_user = Depends(
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    
+# description of export student points
+export_student_points_description = "Export student points from database into excel sheet"
+# export student points from the db session
+# routes to /student-points/export
+# response model returns a schema list of StudentPointsOut that is paginated
+@router.get('/export',description=export_student_points_description)
+# connects to db session
+# authenticate if user is logged in
+# filters for student points
+def get_points_for_export(db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user), quarter_range_id: str = ''):
+    # checks if not admin and returns exception if true
+    if current_user.role_type_id != 1:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to export student points")
+    # checks if the quarter range is not a digit and return exception if true
+    if quarter_range_id.isdigit() == False:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Conflict with quarter range id filter")
+    # get quarter range from the filter
+    quarter_range = db.query(models.Quarter_Range).join(models.Quarter, models.Quarter_Range.quarter_id == models.Quarter.id).filter(
+        models.Quarter_Range.id == quarter_range_id).first()
+    # returns exception if quarter range doesn't exists
+    if not quarter_range:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quarter range with filter not found")
+    # query all users with points
+    user_points = db.query(models.User, func.count(models.StudentPoint.user_id).label("points")).join(
+            models.StudentPoint, models.StudentPoint.user_id == models.User.id , isouter= True
+            ).join(models.EventTime, models.EventTime.id == models.StudentPoint.event_time_id).filter(
+            models.EventTime.quarter_range_id == int(quarter_range_id)
+        ).group_by(models.User.id)
+    # Creates a dataframe from pandas, apply filter for each grade, set column names and content
+    df = pd.read_sql(sql=user_points.filter(models.User.grade==9).with_entities(
+            models.User.id.label('User ID'),
+            models.User.username.label('Username'), 
+            models.User.first_name.label('First Name'),
+            models.User.last_name.label('Last Name'),
+            models.User.grade.label('Grade Level'),
+            func.count(models.StudentPoint.user_id).label("points")
+        ).statement, con=engine)
+    df1 = pd.read_sql(sql=user_points.filter(models.User.grade==10).with_entities(
+            models.User.id.label('User ID'),
+            models.User.username.label('Username'), 
+            models.User.first_name.label('First Name'),
+            models.User.last_name.label('Last Name'),
+            models.User.grade.label('Grade Level'),
+            func.count(models.StudentPoint.user_id).label("points")
+        ).statement, con=engine)
+    df2 = pd.read_sql(sql=user_points.filter(models.User.grade==11).with_entities(
+            models.User.id.label('User ID'),
+            models.User.username.label('Username'), 
+            models.User.first_name.label('First Name'),
+            models.User.last_name.label('Last Name'),
+            models.User.grade.label('Grade Level'),
+            func.count(models.StudentPoint.user_id).label("points")
+        ).statement, con=engine)
+    df3 = pd.read_sql(sql=user_points.filter(models.User.grade==12).with_entities(
+            models.User.id.label('User ID'),
+            models.User.username.label('Username'), 
+            models.User.first_name.label('First Name'),
+            models.User.last_name.label('Last Name'),
+            models.User.grade.label('Grade Level'),
+            func.count(models.StudentPoint.user_id).label("points")
+        ).statement, con=engine)
+    # for exporting excel file data to the user instead of using a path
+    out = io.BytesIO()
+    # writes excel file
+    with pd.ExcelWriter(out, engine="xlsxwriter") as writer:
+        # seperates each data frame into sheets of different grades
+        df.to_excel(excel_writer=writer,index=False,sheet_name='Grade 9')
+        df1.to_excel(excel_writer=writer,index=False,sheet_name='Grade 10')
+        df2.to_excel(excel_writer=writer,index=False,sheet_name='Grade 11')
+        df3.to_excel(excel_writer=writer,index=False,sheet_name='Grade 12')
+        # auto adjust column width
+        for column in df:
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
+            col_idx = df.columns.get_loc(column)
+            writer.sheets['Grade 9'].set_column(col_idx, col_idx, column_length)
+        for column in df1:
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
+            col_idx = df2.columns.get_loc(column)
+            writer.sheets['Grade 10'].set_column(col_idx, col_idx, column_length)
+        for column in df2:
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
+            col_idx = df.columns.get_loc(column)
+            writer.sheets['Grade 11'].set_column(col_idx, col_idx, column_length)
+        for column in df3:
+            column_length = max(df[column].astype(str).map(len).max(), len(column))
+            col_idx = df.columns.get_loc(column)
+            writer.sheets['Grade 12'].set_column(col_idx, col_idx, column_length)
+    # start and end range for file name
+    start_range = quarter_range.start_range.strftime('%Y%m%d')
+    end_range = quarter_range.end_range.strftime('%Y%m%d')
+    # creates a response with media type and headers for the file name
+    response = StreamingResponse(iter([out.getvalue()]), media_type="application/x-xls", headers={
+        'content-disposition':f'attachment; filename={start_range}-{end_range} {quarter_range.quarter.quarter} Points.xlsx'})
+    # return the response
+    return response
