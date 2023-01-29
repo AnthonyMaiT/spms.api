@@ -21,3 +21,7 @@ class Token(BaseModel):
 # would add id to token
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+# for the chatbot input of the user
+class ChatBotInput(BaseModel):
+    message: str

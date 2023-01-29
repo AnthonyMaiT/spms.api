@@ -1,0 +1,140 @@
+{
+    "intents": [
+      {
+        "tag": "greeting",
+        "patterns": [
+          "Hi",
+          "Hey",
+          "How are you",
+          "Is anyone there?",
+          "Hello",
+          "Good day"
+        ],
+        "responses": [
+          "Hey :-)",
+          "Hello, thanks for visiting",
+          "Hi there, what can I do for you?",
+          "Hi there, how can I help?"
+        ]
+      },
+      {
+        "tag": "goodbye",
+        "patterns": ["Bye", "See you later", "Goodbye"],
+        "responses": [
+          "See you later, thanks for visiting",
+          "Have a nice day",
+          "Bye! Come back again soon."
+        ]
+      },
+      {
+        "tag": "thanks",
+        "patterns": ["Thanks", "Thank you", "That's helpful", "Thank's a lot!"],
+        "responses": ["Happy to help!", "Any time!", "My pleasure"]
+      },
+      {
+        "tag": "what",
+        "patterns": [
+          "What is this application?",
+          "What is a Student Points Management System?",
+          "Where am I?",
+          "What is this website?"
+        ],
+        "responses": ["Hello! This website is for keeping track of student participation in event in which they are given a point for each event they attend. You can add a point to a user at an event. Have fun!"]
+      },
+      {
+        "tag": "where_profile",
+        "patterns": [
+          "Where can I find my profile?",
+          "Where is my profile?"
+        ],
+        "responses": [
+          "You can find your profile on the top right menu!"
+        ]
+      },
+      {
+        "tag": "change_password",
+        "patterns": [
+          "How can I change my password?",
+          "Can I change my password?",
+          "Where can I change my password?"
+        ],
+        "responses": [
+          "You can change your password on the top right menu! Make sure you put in the old password correctly and the new/confirm password match!"
+        ]
+      },
+      {
+        "tag": "logout",
+        "patterns": [
+          "Where can I logout?",
+          "How can I logout?",
+          "Can I logout?"
+        ],
+        "responses": [
+          "You can logout in the top right menu!"
+        ]
+      },
+      {
+        "tag": "quarters_tab",
+        "patterns": [
+          "What is in the quarters tab?",
+          "What can I do with quarters?"
+        ],
+        "responses": [
+          "These are the quarters that are set for the school year!"
+        ]
+      },
+      {
+        "tag": "events_tab",
+        "patterns": [
+          "What is in the events tab?",
+          "What can I do with events?",
+          "What is in the events time tab?",
+          "What can I do with events time?"
+        ],
+        "responses": [
+          "You can view event names and the time for each events!"
+        ]
+      },
+      {
+        "tag": "prizes_tab",
+        "patterns": [
+          "What is in the prize tab?",
+          "What can I do with prizes?"
+        ],
+        "responses": [
+          "You can see the prizes the school offers for a student!"
+        ]
+      },
+      {
+        "tag": "winners_tab",
+        "patterns": [
+          "What is in the winners tab?",
+          "What can I do with winners?"
+        ],
+        "responses": [
+          "You can see the winners from the previous or current quarters!"
+        ]
+      },
+      {
+        "tag": "points_tab",
+        "patterns": [
+          "What is in the student point records tab?",
+          "What can I do with points?"
+        ],
+        "responses": [
+          "You can view student attendance of events. You can use this to double check added points!"
+        ]
+      },
+      {
+        "tag": "create_point",
+        "patterns": [
+          "How can I create a point?",
+          "Where can I add a point?",
+          "What is the Add Point tab?"
+        ],
+        "responses": [
+          "If you are checking in people for an event, you can use the add-point tab to register a point! Fill in the respective fields!"
+        ]
+      }
+    ]
+  }

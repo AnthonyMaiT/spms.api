@@ -95,10 +95,19 @@ Add the following code:
 (Keep in mind that this is ran under the postgres user account so filepath have correct permission for it.)
 
 If you want the date and time to show you can do:
-`@echo off`
-`For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%a-%%b)`
-`For /f "tokens=1-2 delims=/:" %%a in ("%TIME%") do (set mytime=%%a%%b)`
+`@echo off`\
+`For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%a-%%b)`\
+`For /f "tokens=1-2 delims=/:" %%a in ("%TIME%") do (set mytime=%%a%%b)`\
 `C:\"Program Files"\PostgreSQL\15\bin\pg_dump.exe --file "{{filepath}}\\{backup name}}-%mydate%_%mytime%.sql" --dbname=spms --username=postgres --clean`
 
 To schedule, go to the schedules tab and create a new schedule.
 Set the start and end of the schedule and then you can add repeated date or time in the repeat tab.
+
+## Optional: Customize Chatbot
+In the `/chatbot/intents` folder, you are able to edit the messages the bot sents to all the different role types. If you want to customize the intents of the user, then you can follow the format that is given in the json file. Then, in command prompt/terminal, go to the chatbot folder and type the following command:
+`python train.py`
+Then you will be ready to go!
+
+## CREDITS
+
+Chatbot was created from (this)[https://github.com/patrickloeber/chatbot-deployment] git repository which was also inspired by (this)[https://chatbotsmagazine.com/contextual-chat-bots-with-tensorflow-4391749d0077] article. Front end chatbot's html and css was created using (this)[https://github.com/hitchcliff/front-end-chatjs]

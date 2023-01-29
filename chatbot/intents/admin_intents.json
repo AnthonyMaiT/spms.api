@@ -1,0 +1,263 @@
+{
+    "intents": [
+      {
+        "tag": "greeting",
+        "patterns": [
+          "Hi",
+          "Hey",
+          "How are you",
+          "Is anyone there?",
+          "Hello",
+          "Good day"
+        ],
+        "responses": [
+          "Hey :-)",
+          "Hello, thanks for visiting",
+          "Hi there, what can I do for you?",
+          "Hi there, how can I help?"
+        ]
+      },
+      {
+        "tag": "goodbye",
+        "patterns": ["Bye", "See you later", "Goodbye"],
+        "responses": [
+          "See you later, thanks for visiting",
+          "Have a nice day",
+          "Bye! Come back again soon."
+        ]
+      },
+      {
+        "tag": "thanks",
+        "patterns": ["Thanks", "Thank you", "That's helpful", "Thank's a lot!"],
+        "responses": ["Happy to help!", "Any time!", "My pleasure"]
+      },
+      {
+        "tag": "what",
+        "patterns": [
+          "What is this application?",
+          "What is a Student Points Management System?",
+          "Where am I?",
+          "What is this website?"
+        ],
+        "responses": ["Hello! This website is for keeping track of student participation in event in which they are given a point for each event they attend. There are many things you can do such as manage users, quarters, events, prizes, records, and winners. Have fun!"]
+      },
+      {
+        "tag": "where_profile",
+        "patterns": [
+          "Where can I find my profile?",
+          "Where is my profile?"
+        ],
+        "responses": [
+          "You can find your profile on the top right menu!"
+        ]
+      },
+      {
+        "tag": "change_password",
+        "patterns": [
+          "How can I change my password?",
+          "Can I change my password?",
+          "Where can I change my password?"
+        ],
+        "responses": [
+          "You can change your password on the top right menu! Make sure you put in the old password correctly and the new/confirm password match!"
+        ]
+      },
+      {
+        "tag": "logout",
+        "patterns": [
+          "Where can I logout?",
+          "How can I logout?",
+          "Can I logout?"
+        ],
+        "responses": [
+          "You can logout in the top right menu!"
+        ]
+      },
+      {
+        "tag": "delete_data",
+        "patterns": [
+          "How can I delete a user?",
+          "How can I delete some data?",
+          "How can I delete events?",
+          "How can I delete an event time?",
+          "How can I delete a winner?",
+          "How can I delete a prize?",
+          "How can I delete a point?",
+          "How can I delete a quarter"
+        ],
+        "responses":[
+          "You can delete data by going to their respective tabs and pressing the red trash can button on the far right column of the data table!"
+        ]
+      },
+      {
+        "tag": "edit_data",
+        "patterns": [
+          "How can I edit a user?",
+          "How can I edit some data?",
+          "How can I edit events?",
+          "How can I edit an event time?",
+          "How can I edit a winner?",
+          "How can I edit a prize?",
+          "How can I edit a point?",
+          "How can I edit a quarter"
+        ],
+        "responses":[
+          "You can edit data by going to their respective tabs and pressing the indigo pen button on the far right column of the data table! Make sure you fill in fields without any errors!"
+        ]
+      },
+      {
+        "tag": "users_tab",
+        "patterns": [
+          "What is in the users tab?",
+          "What can I do with users?"
+        ],
+        "responses": [
+          "You can create, edit, delete, and reset passwords of users. You can also sort the table by pressing the headers and filter data with the provided filters."
+        ]
+      },
+      {
+        "tag": "create_user",
+        "patterns": [
+          "How can I create a user?",
+          "Where can I create user?"
+        ],
+        "responses": [
+          "You can create users with the top right button in the users tab. Fill in the fields and use the selector to select role type. If you are creating a student, select the grade as well!"
+        ]
+      }, 
+      {
+        "tag":"reset_password",
+        "patterns": [
+          "How can I reset a user's password?",
+          "Where can I reset a user's password?"
+        ],
+        "responses": [
+          "You can reset a user's password with the middle action button in the data table of the users tab. Make sure the passwords match!"
+        ]
+      },
+      {
+        "tag": "quarters_tab",
+        "patterns": [
+          "What is in the quarters tab?",
+          "What can I do with quarters?"
+        ],
+        "responses": [
+          "You can create, edit, and delete quarter ranges! Quarters may be different each and every year and event times depend on the set quarter."
+        ]
+      },
+      {
+        "tag": "create_quarter",
+        "patterns": [
+          "How can I create a quarter?",
+          "Where can I create quarter?"
+        ],
+        "responses": [
+          "You can create quarter with the top right button in the quarter tab. Select the quarter name and start and end range for the quarter to create one! Make sure start range is smaller than end range!"
+        ]
+      },
+      {
+        "tag": "events_tab",
+        "patterns": [
+          "What is in the events tab?",
+          "What can I do with events?",
+          "What is in the events time tab?",
+          "What can I do with events time?"
+        ],
+        "responses": [
+          "You can create, edit, and delete events and event times! Events are the name of an event and event times is like scheduling an event at a date and time"
+        ]
+      },
+      {
+        "tag": "create_event",
+        "patterns": [
+          "How can I create an event?",
+          "Where can I create event?"
+        ],
+        "responses": [
+          "You can create event with the top right button in the events tab. Make the event name and add if its a sport or not!"
+        ]
+      },
+      {
+        "tag": "create_event_time",
+        "patterns": [
+          "How can I create an event time?",
+          "Where can I create event time?"
+        ],
+        "responses": [
+          "You can create event with the top right button in the event time tab. First you select the event name using the magnifying glass and press select to the one you want. Then you add the date and time of the event."
+        ]
+      },
+      {
+        "tag": "prizes_tab",
+        "patterns": [
+          "What is in the prize tab?",
+          "What can I do with prizes?"
+        ],
+        "responses": [
+          "You can create, edit, and delete prizes!"
+        ]
+      },
+      {
+        "tag": "create_prize",
+        "patterns": [
+          "How can I create a prize?",
+          "Where can I create prize?"
+        ],
+        "responses": [
+          "You can create prize with the top right button in the prizes tab. Put in any name that doesn't already exist and the respective level. Level 1 is 1-4 points, Level 2 is 5-14 points, and Level 3 is 15 and up"
+        ]
+      },
+      {
+        "tag": "winners_tab",
+        "patterns": [
+          "What is in the winners tab?",
+          "What can I do with winners?"
+        ],
+        "responses": [
+          "You can create, edit, and delete winners! You can filter data with the filters below."
+        ]
+      },
+      {
+        "tag": "create_winner",
+        "patterns": [
+          "How can I create a winner?",
+          "Where can I create winner?"
+        ],
+        "responses": [
+          "You can create winner with the top right button in the winners tab. Select the quarter range you want to add winners and then create! Winners are autogenerated from their participation in events! There is a top winner with most amount of points and grade winners are picked at random."
+        ]
+      },
+      {
+        "tag": "points_tab",
+        "patterns": [
+          "What is in the student point records tab?",
+          "What can I do with points?"
+        ],
+        "responses": [
+          "You can create, edit, and delete student points! A point is a student's participation in an event so they can be used hand in hand. Filters can be used to filter data below!"
+        ]
+      },
+      {
+        "tag": "create_point",
+        "patterns": [
+          "How can I create a point?",
+          "Where can I add a point?",
+          "What is the Add Point tab?"
+        ],
+        "responses": [
+          "If you are checking in people for an event, you can use the add-point tab to register a point! You can also create a custom point in the top right button of the student point records tab."
+        ]
+      },
+      {
+        "tag": "export_points",
+        "patterns": [
+          "Where can I export point data?",
+          "How can I analyze point data for the quarter?",
+          "How can I export points to excel spreadsheet?"
+        ],
+        "responses":[
+          "You can do that with the export points to excel button in the sutdent point records tab!!!"
+        ]
+      }
+    ]
+  }
