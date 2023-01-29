@@ -38,7 +38,7 @@ create_prize_description = "Creates a prize which is added to db"
 # reponse model returns a schema of Prizes
 @router.post('/', response_model=schemas.Prize, status_code=status.HTTP_201_CREATED, description=create_prize_description)
 # CreateUpdatePrize schema for user to pass in data to create prize
-# connects to db session to get current event times
+# connects to db session
 # authenticate if user is logged in
 def create_prize(prize: schemas.CreateUpdatePrize,db: Session = Depends(get_db), current_user = Depends(oauth2.get_current_user)):
     # returns exception if user isn't an admin

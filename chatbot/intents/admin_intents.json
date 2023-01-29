@@ -258,6 +258,17 @@
         "responses":[
           "You can do that with the export points to excel button in the sutdent point records tab!!!"
         ]
+      },
+      {
+        "tag": "users_steps",
+        "patterns": [
+          "What are user steps?",
+          "What can I do with user steps?",
+          "How can I register a user step?"
+        ],
+        "responses": [
+          "User steps are a log of users visiting a certain route"
+        ]
       }
     ]
   }

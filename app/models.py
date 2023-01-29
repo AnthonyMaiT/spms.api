@@ -109,3 +109,15 @@ class StudentWinner(Base):
     user = relationship("User")
     quarter_range = relationship("Quarter_Range")
     prize = relationship("Prize")
+
+# User steps table
+class UserStep(Base):
+    # sets table name to user-steps
+    __tablename__ = 'user_steps'
+    # columns inside the table
+    id = Column(Integer, primary_key = True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    step = Column(String, nullable=False)
+    accessed_at = Column(TIMESTAMP(timezone = True), nullable = False, server_default=text('now()'))
+    # references other tables in db
+    user = relationship("User")
