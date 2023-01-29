@@ -13,6 +13,8 @@ This project was created using [Python 3.8](https://docs.python.org/3.8/) and [A
 Install [PostgreSQL 15.1 with StackBuilder](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads) and create a database
 Optionally, if you want to schedule backups, open StackBuilder during the installation and install pgAgent.
 
+In your api folder in terminal, type the following command: `alembic upgrade head` to add tables to the database
+
 ## Setting up the API Environment
 Create an .env file at root of the spms.api folder and set the following environment variables
 Example:
@@ -76,6 +78,9 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
 
+## Optional: Update Database Tables/Models
+In the models.py file, you can update or add tables to the database as you please with help from alembic. Once you updated the models.py file, type the following command: `alembic revision -m "{YOUR MESSAGE HERE}" --autogenerate`. This would create a new alembic revision to be added to the database. Once you're ready to add it to the database, type the following: `alembic upgrade head`. Then you're all set! If you want to go back a revision, you can type the following: `alembic downgrade -1`. Have fun!
+
 
 ## Optional: Schedule Database Backups
 As pgAgent is installed, you should see a postgres folder in your Users folder of your Local Disk.
@@ -94,7 +99,7 @@ Add the following code:
 `C:\"Program Files"\PostgreSQL\15\bin\pg_dump.exe --file "{filepath}\\{backup name}}.sql" --dbname={name of db} --username={username for db} --clean`
 (Keep in mind that this is ran under the postgres user account so filepath have correct permission for it.)
 
-If you want the date and time to show you can do:
+If you want the date and time to show you can do:\
 `@echo off`\
 `For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set mydate=%%c-%%a-%%b)`\
 `For /f "tokens=1-2 delims=/:" %%a in ("%TIME%") do (set mytime=%%a%%b)`\
