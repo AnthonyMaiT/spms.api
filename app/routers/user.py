@@ -74,31 +74,6 @@ def find_user(username: str = '', db: Session = Depends(get_db), current_user = 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot get user with that name")
     return user
 
-# description of get current user
-get_current_user_description = "Gets the current logged in user"
-# would return the current user to frontend and checks to see if logged in
-@router.get('/current', response_model=schemas.UserOut, description=get_current_user_description)
-def get_current_user(current_user = Depends(oauth2.get_current_user)):
-    return current_user
-
-# description of isadmin
-is_admin_description = "Checks if the current user is an admin"
-# checks if the current user is an admin for client side
-@router.get('/isadmin', response_model=bool, description=is_admin_description)
-def is_admin(current_user = Depends(oauth2.get_current_user)):
-    if current_user.role_type_id != 1:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin")
-    return True
-
-# description of isstaff
-is_staff_description = "Checks if the current user is an admin or staff"
-# checks if the current user is admin/staff for client side
-@router.get('/isstaff', response_model=bool)
-def is_admin(current_user = Depends(oauth2.get_current_user)):
-    if current_user.role_type_id == 1 or current_user.role_type_id == 2:
-        return True
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin/staff")
-
 # description of create user
 create_user_description = "Create a user which is added to db"
 # status code 201 when successfully creating a user
@@ -132,7 +107,7 @@ def change_password(updated_password: schemas.ChangePassword, db: Session = Depe
         get_db), current_user = Depends(oauth2.get_current_user)):
     # checks if the current_password matches does not match with the password in db. would return error
     if not utils.verify(updated_password.current_password, current_user.password):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credential")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Invalid Credential")
     # checks if updated_password does not match confirmed password. would return error
     if updated_password.confirm_new_password != updated_password.new_password:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Passwords do not match")

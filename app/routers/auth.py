@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException, Response
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from ..schemas import Main as schemas
+from ..schemas import Users as schemas
 from .. import database, models, utils, oauth2
 
 # app would use this router to route methods
@@ -14,7 +14,7 @@ login_description = "To authenticate a user's credential for app. Requires usern
 # to login a certain user at /login
 # response_model would return a Token schema
 # passes in description to route
-@router.post('/login', response_model=schemas.Token, description=login_description)
+@router.post('/login', response_model=schemas.UserOut, description=login_description)
 # response to set token to cookie
 # oauth2 username and password request form
 # method would connect to db 
@@ -31,7 +31,7 @@ def login(response: Response, user_credentials: OAuth2PasswordRequestForm = Depe
     # sets token to http cookie
     response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
     # return the access token to user
-    return {"access_token": access_token, "token_type": "bearer"}
+    return user
 
 # removes token from cookie to logout user
 logout_description = "Removes token from cookie to logout user"
