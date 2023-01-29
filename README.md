@@ -1,10 +1,10 @@
 # Student Point Management System App
 
-This project was created using [Python 3.11.1](https://docs.python.org/3/) and [Angular](https://angular.io/) in Windows 11
+This project was created using [Python 3.8](https://docs.python.org/3.8/) and [Angular](https://angular.io/) in Windows 11
 
 ## Prerequisites
 
-- [Python 3.11.1](https://www.python.org/downloads/)
+- [Python 3.8](https://www.python.org/downloads/)
 - [Visual Studio Code](https://code.visualstudio.com/download)
 - [Node.JS v18](https://nodejs.org/en/download/)
 
