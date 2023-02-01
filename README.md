@@ -115,4 +115,4 @@ Then you will be ready to go!
 
 ## CREDITS
 
-Chatbot was created from (this)[https://github.com/patrickloeber/chatbot-deployment] git repository which was also inspired by (this)[https://chatbotsmagazine.com/contextual-chat-bots-with-tensorflow-4391749d0077] article. Front end chatbot's html and css was created using (this)[https://github.com/hitchcliff/front-end-chatjs]
+Chatbot was created from [this](https://github.com/patrickloeber/chatbot-deployment) git repository which was also inspired by [this](https://chatbotsmagazine.com/contextual-chat-bots-with-tensorflow-4391749d0077) article. Front end chatbot's html and css was created using [this](https://github.com/hitchcliff/front-end-chatjs)
